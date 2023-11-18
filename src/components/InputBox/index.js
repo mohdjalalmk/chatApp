@@ -13,7 +13,7 @@ const InputBox = () => {
   };
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.container}>
+    <View style={styles.container}>
       {/* Icon */}
       <AntDesign name="plus" size={20} color="royalblue" />
 
@@ -27,7 +27,7 @@ const InputBox = () => {
 
       {/* Icon */}
       <MaterialIcons onPress={onSend} style={styles.send} name="send" size={16} color="white" />
-    </SafeAreaView>
+    </View>
   );
 };
 
