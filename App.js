@@ -18,13 +18,13 @@ function App() {
         const currentUser = await Auth.currentAuthenticatedUser({
           bypassCache: true,
         });
-        console.log(currentUser);
+        // console.log(currentUser);
 
         // get db user with auth user id (sub id)
         const userData = await API.graphql(
           graphqlOperation(getUser, { id: currentUser.attributes.sub })
         );
-        console.log("userData:", userData);
+        // console.log("userData:", userData);
         newUser = {
           id: currentUser.attributes.sub,
           name: currentUser.attributes.email,
@@ -35,9 +35,9 @@ function App() {
           const newUserRes = await API.graphql(
             graphqlOperation(createUser, { input: newUser })
           );
-          console.log("newUserRes:", newUserRes);
+          // console.log("newUserRes:", newUserRes);
         } else {
-          console.log("user exist");
+          // console.log("user exist");
         }
       } catch (error) {
         console.log("error in app:", error);

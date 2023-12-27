@@ -23,7 +23,7 @@ const InputBox = ({ chatRoom }) => {
     const newMessageResponse = await API.graphql(
       graphqlOperation(createMessage, { input: message })
     );
-    console.log("newMessageResponse:",newMessageResponse);
+    // console.log("newMessageResponse:",newMessageResponse);
 
     // SET last msg in chatroom
     const response = await API.graphql(
@@ -35,7 +35,7 @@ const InputBox = ({ chatRoom }) => {
         },
       })
     );
-    console.log("last msg sent:::::", response);
+    // console.log("last msg sent:::::", response);
     setNewMessage("");
   };
 

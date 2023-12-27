@@ -11,10 +11,10 @@ import { getCommonChatRoomWithUser } from "../../services/chatRoomServices";
 dayjs.extend(relativeTime);
 
 const ContactListItem = ({ user }) => {
-  console.log("usesr::", user);
+  // console.log("usesr::", user);
   const navigation = useNavigation();
   const onPressContact = async () => {
-    console.warn("pressed");
+    // console.warn("pressed");
     //navigate to exsiting chatroom if any 
     const exsitingChatRoom = await getCommonChatRoomWithUser(user.id);
     if (exsitingChatRoom) {
@@ -26,7 +26,7 @@ const ContactListItem = ({ user }) => {
       graphqlOperation(createChatRoom, { input: {} })
     );
     const newChatRoom = newChatRoomData.data.createChatRoom;
-    console.log("newChatRoom:", newChatRoom);
+    // console.log("newChatRoom:", newChatRoom);
 
     if(!newChatRoom){
       console.log('ERROR CREATING CHATROOM');
@@ -39,7 +39,7 @@ const ContactListItem = ({ user }) => {
     );
     // add the current auth user to chat room
     const authUser = await Auth.currentAuthenticatedUser();
-    console.log("authUser",authUser);
+    // console.log("authUser",authUser);
     await API.graphql(
       graphqlOperation(createUserChatRoom, {
         input: {

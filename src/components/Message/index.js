@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 dayjs.extend(relativeTime);
 
 const Message = ({ message }) => {
-  console.log("message:", message);
+  // console.log("message:", message);
   const [isMe, setIsMe] = useState(false);
 
   useEffect(() => {

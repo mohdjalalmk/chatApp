@@ -13,7 +13,7 @@ const ContactsScreen = () => {
       setUsers(res?.data?.listUsers.items);
     });
   }, []);
-  console.log("users:", users);
+  // console.log("users:", users);
   return (
     <FlatList
       data={users}

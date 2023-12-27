@@ -33,7 +33,7 @@ export const getCommonChatRoomWithUser = async (userID) => {
         )
       );
     });
-    console.log("exisiting crooms:", chatRoom);
+    // console.log("exisiting crooms:", chatRoom);
 
     return chatRoom;
   }

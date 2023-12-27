@@ -13,13 +13,15 @@ import InputBox from "../components/InputBox";
 import bg from "../../assets/images/BG.png";
 import messages from "../../assets/data/messages.json";
 import { API, graphqlOperation } from "aws-amplify";
-import { getChatRoom,listMessagesByChatRoom } from "../graphql/queries";
+import { getChatRoom, listMessagesByChatRoom } from "../graphql/queries";
+import { onCreateMessage, onUpdateChatRoom } from "../graphql/subscriptions";
+
 const ChatScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const [chatRoom, setChatRoom] = useState(null);
-  const [messages,setMessages] = useState([])
-  console.log("route:", route.params);
+  const [messages, setMessages] = useState([]);
+  // console.log("route:", route.params);
   const chatRoomId = route?.params?.id;
 
   useEffect(() => {
@@ -32,31 +34,61 @@ const ChatScreen = () => {
 
   useEffect(() => {
     getMessagesByChatRoom();
+    //subscribe to new messages
+    const subscription = API.graphql(
+      graphqlOperation(onCreateMessage, {
+        filter: { chatroomID: { eq: chatRoomId } },
+      })
+    ).subscribe({
+      next: ({ value }) => {
+        // console.log("vaalluee:", value);
+        setMessages((m) => [value?.data?.onCreateMessage, ...m]);
+      },
+      error: (err) => {
+        console.warn(err);
+      },
+    });
+    return () => subscription.unsubscribe();
   }, [chatRoomId]);
 
   const getChatRoomMessages = async () => {
-    console.log("chatRoomId:",chatRoomId);
+    // console.log("chatRoomId:", chatRoomId);
     API.graphql(graphqlOperation(getChatRoom, { id: chatRoomId })).then(
       (result) => {
-        console.log(result.data);
+        // console.log(result.data);
         setChatRoom(result.data?.getChatRoom);
         // setMessages(result.data?.getChatRoom.Messages.items)
       }
     );
+    const subscription = API.graphql(
+      graphqlOperation(onUpdateChatRoom, { filter: { id: { eq: chatRoomId } } })
+    ).subscribe({
+      next: ({ value }) => {
+        setChatRoom((cr) => ({
+          ...(cr || {}),
+          ...value.data.onUpdateChatRoom,
+        }));
+      },
+      error: (err) => console.warn(err),
+    });
+
+    return () => subscription.unsubscribe();
   };
 
   const getMessagesByChatRoom = async () => {
-    console.log("chatRoomId:",chatRoomId);
-    API.graphql(graphqlOperation(listMessagesByChatRoom, { chatroomID: chatRoomId,sortDirection:"DESC" })).then(
-      (result) => {
-        console.log("RESULT::",result.data.listMessagesByChatRoom);
-        setMessages(result.data?.listMessagesByChatRoom.items)
-      }
-    );
+    // console.log("chatRoomId:", chatRoomId);
+    API.graphql(
+      graphqlOperation(listMessagesByChatRoom, {
+        chatroomID: chatRoomId,
+        sortDirection: "DESC",
+      })
+    ).then((result) => {
+      // console.log("RESULT::", result.data.listMessagesByChatRoom);
+      setMessages(result.data?.listMessagesByChatRoom.items);
+    });
   };
-  
-  console.log("CHHHHHATTROOOOMMMMMM:", chatRoom);
 
+  // console.log("CHHHHHATTROOOOMMMMMM:", chatRoom);
 
   // if (!chatRoom) {
   //   return <ActivityIndicator />;

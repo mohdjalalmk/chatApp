@@ -5,11 +5,15 @@ dayjs.extend(relativeTime);
 import { useNavigation } from "@react-navigation/native";
 import { getCommonChatRoomWithUser } from "../../services/chatRoomServices";
 import { useState, useEffect } from "react";
-import { Auth } from "aws-amplify";
+import { Auth, API, graphqlOperation } from "aws-amplify";
+import { onUpdateChatRoom } from "../../graphql/subscriptions";
+
 
 const ChatListItem = ({ chat }) => {
   console.log("kkkk", JSON.stringify(chat));
   const [user, setUser] = useState(null);
+  const [chatRoom, setChatRoom] = useState(chat?.chatRoom);
+
   const navigation = useNavigation();
 
   // const user = chat?.chatRoom?.users?.items[0]?.user;
@@ -18,7 +22,7 @@ const ChatListItem = ({ chat }) => {
       const authUser = await Auth.currentAuthenticatedUser();
 
       // Loop through chat.users.items and find a user that is not us (Authenticated user)
-      const userItem = chat.chatRoom.users.items.find(
+      const userItem = chatRoom?.users.items.find(
         (item) => item.user.id !== authUser.attributes.sub
       );
       setUser(userItem?.user);
@@ -26,16 +30,33 @@ const ChatListItem = ({ chat }) => {
 
     fetchUser();
   }, []);
-  console.log("kkkkk", user);
+
+  useEffect(() => {
+    const subscription = API.graphql(
+      graphqlOperation(onUpdateChatRoom, { filter: { id: { eq: chat.chatRoom.id } } })
+    ).subscribe({
+      next: ({ value }) => {
+        console.log("hjvjvj");
+        setChatRoom((cr) => ({
+          ...(cr || {}),
+          ...value.data.onUpdateChatRoom,
+        }));
+      },
+      error: (err) => console.warn(err),
+    });
+console.log("subscribed");
+    return () => subscription.unsubscribe();
+  }, [chat.chatRoom.id]);
+  
 
   return (
     <Pressable
       onPress={async () => {
         console.warn("pressed");
         const ExistingchatRooms = await getCommonChatRoomWithUser(user?.id);
-        console.log("ExistingchatRooms:", ExistingchatRooms);
+        // console.log("ExistingchatRooms:", ExistingchatRooms);
         if (ExistingchatRooms) {
-          navigation.navigate("Chat", { id: ExistingchatRooms.chatRoom?.id, name: user?.name });
+          navigation.navigate("Chat", { id: chatRoom?.id, name: user?.name });
           return;
         }
       }}
@@ -51,18 +72,19 @@ const ChatListItem = ({ chat }) => {
             {user?.name}
           </Text>
 
-          <Text style={styles.subTitle}>
-            {dayjs(chat?.chatRoom.LastMessage?.createdAt).fromNow()}{" "}
+          <Text style={{color:"red"}}>
+            {dayjs(chatRoom?.LastMessage?.createdAt).fromNow()}{" "}
           </Text>
         </View>
 
         <Text style={styles.subTitle} numberOfLines={2}>
-          {chat?.chatRoom.LastMessage?.text}
+          {chatRoom?.LastMessage?.text}
         </Text>
       </View>
     </Pressable>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
